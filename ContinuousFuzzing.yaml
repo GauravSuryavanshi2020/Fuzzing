@@ -1,0 +1,21 @@
+# Example GitHub Actions workflow
+name: Fuzzing
+on: [push, pull_request]
+
+jobs:
+  fuzz:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential cmake libboost-all-dev
+    - name: Build with fuzzing
+      run: |
+        mkdir build && cd build
+        cmake .. -DCMAKE_CXX_COMPILER=afl-clang-fast++
+        make
+    - name: Run fuzzing
+      run: |
+        timeout 300 afl-fuzz -i input_seeds -o findings ./quantlib_fuzzer
